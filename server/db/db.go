@@ -1,7 +1,8 @@
 package db
 
 import (
-	zlog "go-log-v/server/zap"
+	zlog "frame-web/zap"
+	"github.com/spf13/viper"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -10,7 +11,7 @@ import (
 var DB *gorm.DB
 
 func InitDB() {
-	dsn := "aaaa"
+	dsn := viper.GetString("database.dsn")
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {

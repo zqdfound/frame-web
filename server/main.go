@@ -4,15 +4,20 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"go-log-v/server/db"
-	mid "go-log-v/server/middleware"
-	zlog "go-log-v/server/zap"
+	"frame-web/config"
+	"frame-web/db"
+	mid "frame-web/middleware"
+	zlog "frame-web/zap"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	// 初始化配置
+	config.InitViper()
+	//dbDsn := viper.GetString("database.dsn")
+
 	// 初始化zap日志
 	zlog.InitLogger()
 	// 初始化数据库

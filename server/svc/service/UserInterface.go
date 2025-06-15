@@ -1,9 +1,9 @@
 package service
 
 import (
-	"go-log-v/server/db"
-	"go-log-v/server/svc/models"
-	zlog "go-log-v/server/zap"
+	"frame-web/server/db"
+	"frame-web/server/svc/models"
+	zlog "frame-web/server/zap"
 )
 
 // 查询所有用户列表
