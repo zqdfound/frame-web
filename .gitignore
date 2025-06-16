@@ -1,1 +1,55 @@
 server/config/config-dev.yaml
+# 开发环境文件
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 依赖目录
+node_modules/
+
+# 构建产物
+dist/
+build/
+
+# 日志文件
+*.log
+logs/
+
+# 系统文件
+Thumbs.db
+
+# 测试覆盖率
+coverage/
+
+# 环境变量文件
+.env
+.env.local
+.env.development
+.env.production
+
+# Go语言相关
+bin/
+*.exe
+*.test
+
+# 前端缓存
+.cache/
+
+# 编辑器临时文件
+*.sublime*
+*.code*
+
+# 操作系统文件
+*.swp
+*.swo
+
+# 包管理器锁文件
+yarn.lock
+package-lock.json
+
+# IDE项目文件
+*.iml
+*.ipr
+*.iws
