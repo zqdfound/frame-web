@@ -7,9 +7,9 @@ import (
 )
 
 func InitViper() {
-	viper.SetConfigName("config/config") // 配置文件名(不带扩展名)
-	viper.SetConfigType("yaml")          // 配置文件类型
-	viper.AddConfigPath(".")             // 配置文件路径
+	viper.SetConfigName("config/config-dev") // 配置文件名(不带扩展名)
+	viper.SetConfigType("yaml")              // 配置文件类型
+	viper.AddConfigPath(".")                 // 配置文件路径
 
 	// 设置环境变量前缀并自动加载
 	viper.SetEnvPrefix("APP")
