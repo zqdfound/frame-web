@@ -10,8 +10,22 @@ import (
 )
 
 func InitLogger() {
+	encoderConfig := zapcore.EncoderConfig{
+		TimeKey:        "ts",
+		LevelKey:       "level",
+		NameKey:        "logger",
+		CallerKey:      "caller",
+		FunctionKey:    zapcore.OmitKey,
+		MessageKey:     "msg",
+		StacktraceKey:  "stacktrace",
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.LowercaseLevelEncoder,
+		EncodeTime:     zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05"),
+		EncodeDuration: zapcore.SecondsDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+	}
 	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
+		zapcore.NewJSONEncoder(encoderConfig),
 		getWriterSyncer(),
 		zap.InfoLevel,
 	)
@@ -33,6 +47,10 @@ func getWriterSyncer() zapcore.WriteSyncer {
 		panic(fmt.Sprintf("创建日志文件失败: %v", err))
 	}
 	return zapcore.AddSync(file)
+}
+
+func L() *zap.Logger {
+	return &zap.Logger{}
 }
 
 func Info(msg string, args ...interface{}) {

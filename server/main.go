@@ -23,6 +23,7 @@ func main() {
 	// 初始化数据库
 	db.InitDB()
 	r := gin.Default()
+	r.Use(mid.Recovery())
 	// 使用跨域中间件
 	r.Use(mid.Cors())
 	// 静态文件服务
@@ -39,6 +40,10 @@ func main() {
 	// r.GET("/ws", HandleWebSocket)
 
 	r.POST("/api/sn", HandleSnForm)
+
+	r.GET("/test/panic", func(c *gin.Context) {
+		panic("测试panic处理")
+	})
 
 	r.Run(":8080")
 
