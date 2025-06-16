@@ -1,9 +1,9 @@
 package service
 
 import (
-	"frame-web/server/db"
-	"frame-web/server/svc/models"
-	zlog "frame-web/server/zap"
+	"frame-web/db"
+	"frame-web/svc/models"
+	zlog "frame-web/zap"
 )
 
 // 查询所有用户列表
