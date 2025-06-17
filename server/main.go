@@ -7,8 +7,10 @@ import (
 	"frame-web/config"
 	"frame-web/db"
 	mid "frame-web/middleware"
+	"frame-web/utils"
 	zlog "frame-web/zap"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,6 +24,9 @@ func main() {
 	zlog.InitLogger()
 	// 初始化数据库
 	db.InitDB()
+	//初始化redis
+	utils.NewRedisHelper()
+
 	r := gin.Default()
 	r.Use(mid.Recovery())
 	// 使用跨域中间件
@@ -41,10 +46,21 @@ func main() {
 
 	r.POST("/api/sn", HandleSnForm)
 
-	r.GET("/test/panic", func(c *gin.Context) {
-		panic("测试panic处理")
+	// r.GET("/test/panic", func(c *gin.Context) {
+	// 	panic("测试panic处理")
+	// })
+	r.GET("/test/redis", func(c *gin.Context) {
+		zlog.Info("begin to set redis")
+		name, err := utils.GetRedisHelper().Set(c, "aaa", "1111", 10*time.Minute).Result()
+		if err != nil {
+			zlog.Error("Failed to set redis",
+				"err", err,
+			)
+		}
+		zlog.Info("Success to set redis",
+			"name", name,
+		)
 	})
-
 	r.Run(":8080")
 
 	zlog.Info("Server started",
