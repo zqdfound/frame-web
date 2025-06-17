@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -37,6 +38,9 @@ func NewRedisHelper() *redis.Client {
 		rdh.Client = rdb
 		redisHelper = rdh
 	})
-
+	_, err := rdb.Ping(context.Background()).Result()
+	if err != nil {
+		panic("连接Redis不成功: " + err.Error())
+	}
 	return rdb
 }

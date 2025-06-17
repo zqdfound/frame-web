@@ -30,12 +30,7 @@ func main() {
 	// 初始化数据库
 	db.InitDB()
 	//初始化redis
-	rdb := utils.NewRedisHelper()
-	if _, err := rdb.Ping(context.Background()).Result(); err != nil {
-		zlog.Error("Failed to ping redis",
-			"err", err,
-		)
-	}
+	utils.NewRedisHelper()
 
 	r := gin.Default()
 	r.Use(mid.Recovery())
