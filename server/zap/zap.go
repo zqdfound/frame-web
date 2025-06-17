@@ -24,9 +24,16 @@ func InitLogger() {
 		EncodeDuration: zapcore.SecondsDurationEncoder,
 		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
+	// 创建文件输出
+	fileSyncer := getWriterSyncer()
+	// 创建控制台输出
+	consoleSyncer := zapcore.AddSync(os.Stdout)
+
+	// 使用MultiWriteSyncer同时输出到文件和控制台
+	multiSyncer := zapcore.NewMultiWriteSyncer(fileSyncer, consoleSyncer)
 	core := zapcore.NewCore(
 		zapcore.NewJSONEncoder(encoderConfig),
-		getWriterSyncer(),
+		multiSyncer,
 		zap.InfoLevel,
 	)
 	logger := zap.New(core)

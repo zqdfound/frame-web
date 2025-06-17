@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -15,6 +16,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	ctx = context.Background()
+)
+
 func main() {
 	// 初始化配置
 	config.InitViper()
@@ -25,7 +30,12 @@ func main() {
 	// 初始化数据库
 	db.InitDB()
 	//初始化redis
-	utils.NewRedisHelper()
+	rdb := utils.NewRedisHelper()
+	if _, err := rdb.Ping(context.Background()).Result(); err != nil {
+		zlog.Error("Failed to ping redis",
+			"err", err,
+		)
+	}
 
 	r := gin.Default()
 	r.Use(mid.Recovery())
@@ -50,7 +60,6 @@ func main() {
 	// 	panic("测试panic处理")
 	// })
 	r.GET("/test/redis", func(c *gin.Context) {
-		zlog.Info("begin to set redis")
 		name, err := utils.GetRedisHelper().Set(c, "aaa", "1111", 10*time.Minute).Result()
 		if err != nil {
 			zlog.Error("Failed to set redis",
