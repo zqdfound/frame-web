@@ -8,16 +8,24 @@ import (
 	"frame-web/config"
 	"frame-web/db"
 	mid "frame-web/middleware"
+	"frame-web/model/response"
 	"frame-web/utils"
 	zlog "frame-web/zap"
 	"net/http"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
 var (
-	ctx = context.Background()
+	ctx       = context.Background()
+	jwtConfig = mid.JWTConfig{
+		SigningKey:  "woailiming",
+		WhiteList:   []string{"/api/public", "/test/set/jwt"},
+		ContextKey:  "user",
+		TokenLookup: "header:Authorization",
+	}
 )
 
 func main() {
@@ -33,15 +41,12 @@ func main() {
 	utils.NewRedisHelper()
 
 	r := gin.Default()
+	r.Use(mid.JWTAuth(jwtConfig))
 	r.Use(mid.Recovery())
 	// 使用跨域中间件
 	r.Use(mid.Cors())
 	// 静态文件服务
 	r.Static("/static", "../frontend/dist")
-	// 根路径重定向到前端
-	//r.GET("/", func(c *gin.Context) {
-	//	c.File("./frontend/dist/index.html")
-	//})
 
 	// API路由
 	r.GET("/api/logs", listLogs)
@@ -65,6 +70,20 @@ func main() {
 			"name", name,
 		)
 	})
+	r.GET("/test/set/jwt", func(c *gin.Context) {
+		claims := jwt.MapClaims{
+			"user_id":  123,
+			"username": "testuser",
+			"exp":      time.Now().Add(time.Hour * 24).Unix(), // 24小时后过期
+		}
+		jwtStr, err := mid.GenerateToken(jwtConfig.SigningKey, claims)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "未授权"})
+			return
+		}
+		response.OkWithData(jwtStr, c)
+	})
+
 	r.Run(":8080")
 
 	zlog.Info("Server started",
