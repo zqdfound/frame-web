@@ -9,6 +9,7 @@ import (
 	"frame-web/db"
 	mid "frame-web/middleware"
 	"frame-web/model/response"
+	userService "frame-web/svc/service"
 	"frame-web/utils"
 	zlog "frame-web/zap"
 	"net/http"
@@ -84,6 +85,11 @@ func main() {
 			return
 		}
 		response.OkWithData(jwtStr, c)
+	})
+
+	r.GET("/test/all/user", func(c *gin.Context) {
+		users, _ := userService.GetAllUsers()
+		response.OkWithData(users, c)
 	})
 
 	r.Run(":8080")

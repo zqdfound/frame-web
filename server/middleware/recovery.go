@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"frame-web/model/response"
 	zlog "frame-web/zap"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,7 @@ func Recovery() gin.HandlerFunc {
 				// 	"code":    500,
 				// 	"message": "Internal Server Error",
 				// })
+				response.FailWithMessage("系统异常", c)
 			}
 		}()
 

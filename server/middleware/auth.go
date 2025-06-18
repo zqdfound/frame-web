@@ -3,6 +3,7 @@ package middleware
 import (
 	"encoding/json"
 	"errors"
+	"frame-web/model/response"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -53,7 +54,8 @@ func JWTAuth(config JWTConfig) gin.HandlerFunc {
 		// 解析token
 		claims, err := ParseToken(token, config.SigningKey)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "无效的token"})
+			// c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "无效的token"})
+			response.FailWithMessage("无效的token", c)
 			return
 		}
 

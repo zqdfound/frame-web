@@ -1,4 +1,4 @@
-package service
+package userService
 
 import (
 	"frame-web/db"
@@ -12,7 +12,8 @@ func GetAllUsers() ([]*models.User, error) {
 	result := db.DB.Find(&users)
 	if result.Error != nil {
 		zlog.Error("Failed to query users", "error", result.Error)
-		return nil, result.Error
+		// return nil, result.Error
+		panic(result.Error)
 	}
 	return users, nil
 }
