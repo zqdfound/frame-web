@@ -14,18 +14,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 var (
-	ctx       = context.Background()
-	jwtConfig = mid.JWTConfig{
-		SigningKey:  "woailiming",
-		WhiteList:   []string{"/api/public", "/test/set/jwt"},
-		ContextKey:  "user",
-		TokenLookup: "header:Authorization",
-	}
+	ctx = context.Background()
 )
 
 func main() {
@@ -41,6 +35,13 @@ func main() {
 	utils.NewRedisHelper()
 
 	r := gin.Default()
+	jwtConfig := mid.JWTConfig{
+		SigningKey: viper.GetString("jwt.signing_key"),
+		// WhiteList:   []string{"/api/public", "/test/set/jwt"},
+		WhiteList:   viper.GetStringSlice("jwt.white_list"),
+		ContextKey:  "usercontext",
+		TokenLookup: "header:Authorization",
+	}
 	r.Use(mid.JWTAuth(jwtConfig))
 	r.Use(mid.Recovery())
 	// 使用跨域中间件
@@ -71,12 +72,13 @@ func main() {
 		)
 	})
 	r.GET("/test/set/jwt", func(c *gin.Context) {
-		claims := jwt.MapClaims{
-			"user_id":  123,
-			"username": "testuser",
-			"exp":      time.Now().Add(time.Hour * 24).Unix(), // 24小时后过期
+		newUser := mid.UserContext{
+			UserID:   "123",
+			Username: "testuser",
+			Exp:      uint64(time.Now().Add(time.Hour * 24).Unix()), // 24小时后过期
 		}
-		jwtStr, err := mid.GenerateToken(jwtConfig.SigningKey, claims)
+
+		jwtStr, err := mid.GenerateTokenByUser(&jwtConfig, &newUser)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "未授权"})
 			return

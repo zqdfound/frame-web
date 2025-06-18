@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"path/filepath"
@@ -9,6 +10,12 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
+
+type UserContext struct {
+	UserID   string `json:"user_id"`
+	Username string `json:"username"`
+	Exp      uint64 `json:"exp"`
+}
 
 // JWTConfig JWT配置
 type JWTConfig struct {
@@ -95,10 +102,47 @@ func ParseToken(tokenString, signingKey string) (jwt.MapClaims, error) {
 	return nil, errors.New("无效的token")
 }
 
+func ParseToken2User(tokenString string, jwtConfig *JWTConfig) (*UserContext, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("不支持的签名方法")
+		}
+		return []byte(jwtConfig.SigningKey), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		userContextMap, ok := claims[jwtConfig.ContextKey].(map[string]interface{})
+		if !ok {
+			return nil, errors.New("token中的usercontext格式不正确")
+		}
+		userContextJSON, err := json.Marshal(userContextMap)
+		if err != nil {
+			return nil, err
+		}
+		var userContext UserContext
+		json.Unmarshal(userContextJSON, &userContext)
+		return &userContext, nil
+	}
+
+	return nil, errors.New("无效的token")
+}
+
 // GenerateToken 根据用户信息生成JWT token
 func GenerateToken(signingKey string, claims jwt.MapClaims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(signingKey))
+}
+
+func GenerateTokenByUser(jwtConfig *JWTConfig, user *UserContext) (string, error) {
+	claims := jwt.MapClaims{
+		jwtConfig.ContextKey: user,
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(jwtConfig.SigningKey))
 }
 
 // // 生成token示例

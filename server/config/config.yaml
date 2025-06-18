@@ -4,3 +4,10 @@ redis:
   addr: "127.0.0.1:6379"
   password: ""
   db: 0
+
+jwt:
+  signing_key: "woailiming"
+  white_list:
+    - "/api/public"
+    - "/test/set/jwt"
+    - "/auth/login"
