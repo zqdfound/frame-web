@@ -5,13 +5,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"frame-web/config"
-	"frame-web/db"
+	"frame-web/core"
+	"frame-web/global"
 	mid "frame-web/middleware"
 	"frame-web/model/response"
-	userService "frame-web/svc/service"
 	"frame-web/utils"
-	zlog "frame-web/zap"
+	"go.uber.org/zap"
 	"net/http"
 	"time"
 
@@ -25,15 +24,15 @@ var (
 
 func main() {
 	// 初始化配置
-	config.InitViper()
-	//dbDsn := viper.GetString("database.dsn")
-
+	global.GLOBAL_VP = core.Viper()
 	// 初始化zap日志
-	zlog.InitLogger()
+	global.GLOBAL_LOG = core.ZapInit()
+	global.GLOBAL_LOG.Info("启动！！！！ ", zap.String("address", "8888"))
+	//zlog.InitLogger()
 	// 初始化数据库
-	db.InitDB()
+	//db.InitDB()
 	//初始化redis
-	utils.NewRedisHelper()
+	//utils.NewRedisHelper()
 
 	r := gin.Default()
 	jwtConfig := mid.JWTConfig{
@@ -62,15 +61,15 @@ func main() {
 	// 	panic("测试panic处理")
 	// })
 	r.GET("/test/redis", func(c *gin.Context) {
-		name, err := utils.GetRedisHelper().Set(c, "aaa", "1111", 10*time.Minute).Result()
+		_, err := utils.GetRedisHelper().Set(c, "aaa", "1111", 10*time.Minute).Result()
 		if err != nil {
-			zlog.Error("Failed to set redis",
-				"err", err,
-			)
+			//zlog.Error("Failed to set redis",
+			//	"err", err,
+			//)
 		}
-		zlog.Info("Success to set redis",
-			"name", name,
-		)
+		//zlog.Info("Success to set redis",
+		//	"name", name,
+		//)
 	})
 	r.GET("/test/set/jwt", func(c *gin.Context) {
 		newUser := mid.UserContext{
@@ -88,15 +87,15 @@ func main() {
 	})
 
 	r.GET("/test/all/user", func(c *gin.Context) {
-		users, _ := userService.GetAllUsers()
-		response.OkWithData(users, c)
+		//users, _ := userService.GetAllUsers()
+		//response.OkWithData(users, c)
 	})
 
 	r.Run(":8080")
 
-	zlog.Info("Server started",
-		"port", "8080",
-	)
+	//zlog.Info("Server started",
+	//	"port", "8080",
+	//)
 
 }
 
@@ -116,16 +115,16 @@ func HandleSnForm(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&snForm); err != nil {
-		zlog.Error("Failed to bind JSON",
-			"err", err,
-		)
+		//zlog.Error("Failed to bind JSON",
+		//	"err", err,
+		//)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	zlog.Info("Received SN form",
-		"sn", snForm.Sn,
-		"pwd", snForm.Pwd, // 出于安全考虑，不记录实际密码
-	)
+	//zlog.Info("Received SN form",
+	//	"sn", snForm.Sn,
+	//	"pwd", snForm.Pwd, // 出于安全考虑，不记录实际密码
+	//)
 	if snForm.Pwd != "nevermore" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "pwd error"})
 		return
@@ -133,9 +132,9 @@ func HandleSnForm(c *gin.Context) {
 	//1 查询设备信息 dep配置
 	deviceInfo, err := reqDeviceInfo(snForm.Sn)
 	if err != nil {
-		zlog.Error("Failed to req device info",
-			"err", err,
-		)
+		//zlog.Error("Failed to req device info",
+		//	"err", err,
+		//)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
