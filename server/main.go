@@ -27,10 +27,15 @@ func main() {
 	global.GLOBAL_VP = core.Viper()
 	// 初始化zap日志
 	global.GLOBAL_LOG = core.ZapInit()
-	global.GLOBAL_LOG.Info("启动！！！！ ", zap.String("address", "8888"))
-	//zlog.InitLogger()
-	// 初始化数据库
-	//db.InitDB()
+	zap.ReplaceGlobals(global.GLOBAL_LOG)
+	// 初始化Mysql数据库
+	global.GVA_DB = core.InitMysql()
+	global.GLOBAL_LOG.Info("Mysql数据库连接成功")
+	if global.GVA_DB != nil {
+		// 程序结束前关闭数据库链接
+		db, _ := global.GVA_DB.DB()
+		defer db.Close()
+	}
 	//初始化redis
 	//utils.NewRedisHelper()
 
