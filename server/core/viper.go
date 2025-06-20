@@ -24,7 +24,7 @@ func Viper() *viper.Viper {
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
-	if err = v.Unmarshal(&global.GLOBAL_CONFIG); err != nil { //绑定配置
+	if err = v.Unmarshal(&global.CONFIG); err != nil { //绑定配置
 		panic(err)
 	}
 	return v

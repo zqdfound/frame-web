@@ -19,19 +19,19 @@ func NewZapCore(level zapcore.Level) *ZapCore {
 	levelEnabler := zap.LevelEnablerFunc(func(l zapcore.Level) bool {
 		return l == level
 	})
-	entity.Core = zapcore.NewCore(global.GLOBAL_CONFIG.Zap.Encoder(), syncer, levelEnabler)
+	entity.Core = zapcore.NewCore(global.CONFIG.Zap.Encoder(), syncer, levelEnabler)
 	return entity
 }
 
 func (z *ZapCore) WriteSyncer(formats ...string) zapcore.WriteSyncer {
 	cutter := NewCutter(
-		global.GLOBAL_CONFIG.Zap.Director,
+		global.CONFIG.Zap.Director,
 		z.level.String(),
-		global.GLOBAL_CONFIG.Zap.RetentionDay,
+		global.CONFIG.Zap.RetentionDay,
 		CutterWithLayout(time.DateOnly),
 		CutterWithFormats(formats...),
 	)
-	if global.GLOBAL_CONFIG.Zap.LogInConsole {
+	if global.CONFIG.Zap.LogInConsole {
 		multiSyncer := zapcore.NewMultiWriteSyncer(os.Stdout, cutter)
 		return zapcore.AddSync(multiSyncer)
 	}
@@ -57,7 +57,7 @@ func (z *ZapCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
 	for i := 0; i < len(fields); i++ {
 		if fields[i].Key == "business" || fields[i].Key == "folder" || fields[i].Key == "directory" {
 			syncer := z.WriteSyncer(fields[i].String)
-			z.Core = zapcore.NewCore(global.GLOBAL_CONFIG.Zap.Encoder(), syncer, z.level)
+			z.Core = zapcore.NewCore(global.CONFIG.Zap.Encoder(), syncer, z.level)
 		}
 	}
 	return z.Core.Write(entry, fields)

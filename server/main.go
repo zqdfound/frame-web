@@ -7,15 +7,9 @@ import (
 	"fmt"
 	"frame-web/core"
 	"frame-web/global"
-	mid "frame-web/middleware"
-	"frame-web/model/response"
-	"frame-web/utils"
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
-	"time"
-
-	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -26,77 +20,78 @@ func main() {
 	// 初始化配置
 	global.GLOBAL_VP = core.Viper()
 	// 初始化zap日志
-	global.GLOBAL_LOG = core.ZapInit()
-	zap.ReplaceGlobals(global.GLOBAL_LOG)
+	global.LOG = core.ZapInit()
+	zap.ReplaceGlobals(global.LOG)
 	// 初始化Mysql数据库
-	global.GVA_DB = core.InitMysql()
-	global.GLOBAL_LOG.Info("Mysql数据库连接成功")
-	if global.GVA_DB != nil {
+	global.DB = core.InitMysql()
+	global.LOG.Info("Mysql数据库连接成功")
+	if global.DB != nil {
 		// 程序结束前关闭数据库链接
-		db, _ := global.GVA_DB.DB()
+		db, _ := global.DB.DB()
 		defer db.Close()
 	}
+	core.RunWindowsServer()
 	//初始化redis
 	//utils.NewRedisHelper()
 
-	r := gin.Default()
-	jwtConfig := mid.JWTConfig{
-		SigningKey: viper.GetString("jwt.signing_key"),
-		// WhiteList:   []string{"/api/public", "/test/set/jwt"},
-		WhiteList:   viper.GetStringSlice("jwt.white_list"),
-		ContextKey:  "usercontext",
-		TokenLookup: "header:Authorization",
-	}
-	r.Use(mid.JWTAuth(jwtConfig))
-	r.Use(mid.Recovery())
+	//r := gin.Default()
+	//jwtConfig := mid.JWTConfig{
+	//	SigningKey: viper.GetString("jwt.signing_key"),
+	//	// WhiteList:   []string{"/api/public", "/test/set/jwt"},
+	//	WhiteList:   viper.GetStringSlice("jwt.white_list"),
+	//	ContextKey:  "usercontext",
+	//	TokenLookup: "header:Authorization",
+	//}
+	//r.Use(mid.JWTAuth(jwtConfig))
+	//r.Use(mid.Recovery())
 	// 使用跨域中间件
-	r.Use(mid.Cors())
+	//r.Use(mid.Cors())
 	// 静态文件服务
-	r.Static("/static", "../frontend/dist")
+	//r.Static("/static", "../frontend/dist")
 
 	// API路由
-	r.GET("/api/logs", listLogs)
+	//r.GET("/api/logs", listLogs)
 
 	// WebSocket路由
 	// r.GET("/ws", HandleWebSocket)
 
-	r.POST("/api/sn", HandleSnForm)
+	//r.POST("/api/sn", HandleSnForm)
 
 	// r.GET("/test/panic", func(c *gin.Context) {
 	// 	panic("测试panic处理")
 	// })
-	r.GET("/test/redis", func(c *gin.Context) {
-		_, err := utils.GetRedisHelper().Set(c, "aaa", "1111", 10*time.Minute).Result()
-		if err != nil {
-			//zlog.Error("Failed to set redis",
-			//	"err", err,
-			//)
-		}
-		//zlog.Info("Success to set redis",
-		//	"name", name,
-		//)
-	})
-	r.GET("/test/set/jwt", func(c *gin.Context) {
-		newUser := mid.UserContext{
-			UserID:   "123",
-			Username: "testuser",
-			Exp:      uint64(time.Now().Add(time.Hour * 24).Unix()), // 24小时后过期
-		}
-
-		jwtStr, err := mid.GenerateTokenByUser(&jwtConfig, &newUser)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "未授权"})
-			return
-		}
-		response.OkWithData(jwtStr, c)
-	})
-
-	r.GET("/test/all/user", func(c *gin.Context) {
-		//users, _ := userService.GetAllUsers()
-		//response.OkWithData(users, c)
-	})
-
-	r.Run(":8080")
+	//r.GET("/test/redis", func(c *gin.Context) {
+	//	_, err := utils.GetRedisHelper().Set(c, "aaa", "1111", 10*time.Minute).Result()
+	//	if err != nil {
+	//		//zlog.Error("Failed to set redis",
+	//		//	"err", err,
+	//		//)
+	//	}
+	//	//zlog.Info("Success to set redis",
+	//	//	"name", name,
+	//	//)
+	//})
+	//r.GET("/test/set/jwt", func(c *gin.Context) {
+	//	newUser := mid.UserContext{
+	//		UserID:   "123",
+	//		Username: "testuser",
+	//		Exp:      uint64(time.Now().Add(time.Hour * 24).Unix()), // 24小时后过期
+	//	}
+	//
+	//	jwtStr, err := mid.GenerateTokenByUser(&jwtConfig, &newUser)
+	//	if err != nil {
+	//		c.JSON(http.StatusUnauthorized, gin.H{"error": "未授权"})
+	//		return
+	//	}
+	//	response.OkWithData(jwtStr, c)
+	//})
+	//
+	//r.GET("/test/all/user", func(c *gin.Context) {
+	//	//users, _ := userService.GetAllUsers()
+	//	//response.OkWithData(users, c)
+	//})
+	//
+	//r.Run(":8080")
 
 	//zlog.Info("Server started",
 	//	"port", "8080",

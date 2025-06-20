@@ -26,6 +26,14 @@ type JWTConfig struct {
 	TokenLookup string   // token查找方式，如 "header:Authorization"
 }
 
+func JWTAuth2() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		response.FailWithMessage("测试需要鉴权", c)
+		c.Abort()
+		return
+	}
+}
+
 // JWTAuth JWT鉴权中间件
 func JWTAuth(config JWTConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {

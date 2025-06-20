@@ -10,7 +10,7 @@ import (
 var DB *gorm.DB
 
 func InitMysql() *gorm.DB {
-	m := global.GLOBAL_CONFIG.Mysql
+	m := global.CONFIG.Mysql
 	if m.Dbname == "" {
 		return nil
 	}

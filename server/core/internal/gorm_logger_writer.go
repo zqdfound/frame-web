@@ -26,15 +26,15 @@ func (c *Writer) Printf(message string, data ...any) {
 	if c.config.LogZap {
 		switch c.config.LogLevel() {
 		case logger.Silent:
-			global.GLOBAL_LOG.Debug(fmt.Sprintf(message, data...))
+			global.LOG.Debug(fmt.Sprintf(message, data...))
 		case logger.Error:
-			global.GLOBAL_LOG.Error(fmt.Sprintf(message, data...))
+			global.LOG.Error(fmt.Sprintf(message, data...))
 		case logger.Warn:
-			global.GLOBAL_LOG.Warn(fmt.Sprintf(message, data...))
+			global.LOG.Warn(fmt.Sprintf(message, data...))
 		case logger.Info:
-			global.GLOBAL_LOG.Info(fmt.Sprintf(message, data...))
+			global.LOG.Info(fmt.Sprintf(message, data...))
 		default:
-			global.GLOBAL_LOG.Info(fmt.Sprintf(message, data...))
+			global.LOG.Info(fmt.Sprintf(message, data...))
 		}
 		return
 	}
