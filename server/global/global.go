@@ -2,6 +2,7 @@ package global
 
 import (
 	"frame-web/config"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"

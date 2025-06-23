@@ -4,6 +4,7 @@ import (
 	"frame-web/global"
 	"frame-web/middleware"
 	"frame-web/model/response"
+	userService "frame-web/svc/service"
 	"net/http"
 	"time"
 
@@ -18,6 +19,9 @@ func Routers() *gin.Engine {
 	if gin.Mode() == gin.DebugMode {
 		Router.Use(gin.Logger())
 	}
+	// 跨域，如需跨域可以打开下面的注释
+	Router.Use(middleware.Cors()) // 直接放行全部跨域请求
+	global.LOG.Info("use middleware cors")
 	// 公共路由组 - 不需要鉴权
 	PublicGroup := Router.Group(global.CONFIG.System.RouterPrefix)
 	{
@@ -25,6 +29,31 @@ func Routers() *gin.Engine {
 		// 健康监测
 		PublicGroup.GET("/health", func(c *gin.Context) {
 			c.JSON(http.StatusOK, "ok")
+		})
+
+		PublicGroup.POST("/device", func(c *gin.Context) {
+			type DInfo struct {
+				Sn  string `json:"sn"`
+				Pwd string `json:"pwd"`
+			}
+			// DInfo 是类型，不能直接取地址，需要创建该类型的实例
+			var dInfo DInfo
+			if err := c.ShouldBindJSON(&dInfo); err != nil {
+				response.FailWithMessage(err.Error(), c)
+				return
+			}
+			sn := dInfo.Sn
+			pwd := dInfo.Pwd
+			if "woailiming" != pwd {
+				response.FailWithMessage("wrong password", c)
+				return
+			}
+			device, err := userService.GetDeviceInfo(sn)
+			if err != nil {
+				response.FailWithMessage(err.Error(), c)
+				return
+			}
+			response.OkWithData(device, c)
 		})
 	}
 
@@ -47,6 +76,7 @@ func Routers() *gin.Engine {
 			val, err := global.REDIS.Get(c, "aaaa").Result()
 			response.OkWithDetailed(val, "Redis操作成功"+val, c)
 		})
+
 	}
 
 	return Router
