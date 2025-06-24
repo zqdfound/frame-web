@@ -3,12 +3,14 @@ package initialize
 import (
 	"frame-web/global"
 	"frame-web/middleware"
+	"frame-web/model/request"
 	"frame-web/model/response"
 	userService "frame-web/svc/service"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // 初始化总路由
@@ -29,6 +31,23 @@ func Routers() *gin.Engine {
 		// 健康监测
 		PublicGroup.GET("/health", func(c *gin.Context) {
 			c.JSON(http.StatusOK, "ok")
+		})
+		PublicGroup.GET("/users", func(c *gin.Context) {
+			list, total, err := userService.GetAllUsersPage(request.PageInfo{
+				Page:     1,
+				PageSize: 10,
+			})
+			if err != nil {
+				global.LOG.Error("获取失败!", zap.Error(err))
+				response.FailWithMessage("获取失败:"+err.Error(), c)
+				return
+			}
+			response.OkWithDetailed(response.PageResult{
+				List:     list,
+				Total:    total,
+				Page:     1,
+				PageSize: 10,
+			}, "获取成功", c)
 		})
 
 		PublicGroup.POST("/device", func(c *gin.Context) {
