@@ -6,21 +6,24 @@ import (
 	"fmt"
 	"frame-web/global"
 	"frame-web/svc/models"
+	"github.com/go-resty/resty/v2"
 	"net/http"
 )
 
 func GetDeviceInfo(sn string) (*models.Device, error) {
-	info, err := reqDeviceInfo(sn)
-	if err != nil {
-		return nil, err
-	}
-	jsonData, err := json.Marshal(info)
-	var d models.Device
-	err = json.Unmarshal(jsonData, &d)
-	if err != nil {
-		return nil, err
-	}
-	return &d, nil
+	//info, err := reqDeviceInfo(sn)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//jsonData, err := json.Marshal(info)
+	//var d models.Device
+	//err = json.Unmarshal(jsonData, &d)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//return &d, nil
+	return getDeviceResty(sn)
+
 }
 
 // KGF9JNHJHQ
@@ -61,4 +64,39 @@ func reqDeviceInfo(sn string) (map[string]interface{}, error) {
 	}
 	fmt.Println(result["data"].(map[string]interface{}))
 	return result["data"].(map[string]interface{}), nil
+}
+
+// 使用resty工具
+func getDeviceResty(sn string) (*models.Device, error) {
+	// 准备Basic Auth
+	username := global.CONFIG.Device.Username
+	password := global.CONFIG.Device.Password
+	auth := username + ":" + password
+	basicAuth := "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
+
+	client := resty.New()
+	defer client.SetCloseConnection(true) // 关闭连接
+
+	res, err := resty.New().R().
+		SetHeader("Authorization", basicAuth).
+		SetBody(map[string]string{}). // default request content type is JSON
+		SetResult(&DeviceResp{}).     // or SetResult(LoginResponse{}).
+		Post(global.CONFIG.Device.Host + "/mdm/facade/deviceInfo/" + sn)
+
+	if err != nil {
+		return nil, fmt.Errorf("请求失败: %w", err)
+	}
+
+	if res.IsError() {
+		return nil, fmt.Errorf("请求失败，状态码: %d", res.StatusCode())
+	}
+
+	return &res.Result().(*DeviceResp).Data, nil
+
+}
+
+type DeviceResp struct {
+	Message string        `json:"message"`
+	Code    uint          `json:"code"`
+	Data    models.Device `json:"data"`
 }
