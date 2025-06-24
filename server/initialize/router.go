@@ -5,8 +5,10 @@ import (
 	"frame-web/middleware"
 	"frame-web/model/request"
 	"frame-web/model/response"
+	"frame-web/svc/models"
 	userService "frame-web/svc/service"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -32,10 +34,27 @@ func Routers() *gin.Engine {
 		PublicGroup.GET("/health", func(c *gin.Context) {
 			c.JSON(http.StatusOK, "ok")
 		})
+		PublicGroup.POST("/users", func(c *gin.Context) {
+			var user models.User
+			if err := c.ShouldBindJSON(&user); err != nil {
+				response.Fail(c)
+				return
+			}
+			if err := userService.CreateUser(&user); err != nil {
+				global.LOG.Error("新增用户失败!", zap.Error(err))
+				response.FailWithMessage("新增用户失败:"+err.Error(), c)
+				return
+			}
+			global.LOG.Info("新增用户成功!", zap.Any("user", user))
+			response.Ok(c)
+		})
 		PublicGroup.GET("/users", func(c *gin.Context) {
+			pageNum, _ := strconv.Atoi(c.Query("pageNum"))
+			pageSize, _ := strconv.Atoi(c.Query("pageSize"))
+
 			list, total, err := userService.GetAllUsersPage(request.PageInfo{
-				Page:     1,
-				PageSize: 10,
+				Page:     pageNum,
+				PageSize: pageSize,
 			})
 			if err != nil {
 				global.LOG.Error("获取失败!", zap.Error(err))

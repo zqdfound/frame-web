@@ -1,17 +1,9 @@
 package main
 
 import (
-	"context"
 	"frame-web/core"
 	"frame-web/global"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-)
-
-var (
-	ctx = context.Background()
 )
 
 func main() {
@@ -30,12 +22,4 @@ func main() {
 	}
 	core.RunWindowsServer()
 
-}
-
-func listLogs(c *gin.Context) {
-	fileNames := []string{
-		"./log/log1.txt",
-	}
-	// 实现获取日志文件列表的逻辑
-	c.JSON(http.StatusOK, gin.H{"files": fileNames})
 }
