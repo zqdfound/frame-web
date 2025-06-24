@@ -52,9 +52,14 @@ func Routers() *gin.Engine {
 			pageNum, _ := strconv.Atoi(c.Query("pageNum"))
 			pageSize, _ := strconv.Atoi(c.Query("pageSize"))
 
-			list, total, err := userService.GetAllUsersPage(request.PageInfo{
-				Page:     pageNum,
-				PageSize: pageSize,
+			list, total, err := userService.GetAllUsersPage(&userService.UserPageReq{
+				PageInfo: request.PageInfo{
+					Page:     pageNum,
+					PageSize: pageSize,
+				},
+				User: &models.User{
+					Username: c.Query("username"),
+				},
 			})
 			if err != nil {
 				global.LOG.Error("获取失败!", zap.Error(err))

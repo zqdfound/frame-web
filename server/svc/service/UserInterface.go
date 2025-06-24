@@ -6,10 +6,13 @@ import (
 	"frame-web/svc/models"
 )
 
+type UserPageReq struct {
+	request.PageInfo
+	User *models.User
+}
+
 // 分页测试
-func GetAllUsersPage(info request.PageInfo) (list []models.User, total int64, err error) {
-	//limit := info.PageSize
-	//offset := info.PageSize * (info.Page - 1)
+func GetAllUsersPage(info *UserPageReq) (list []models.User, total int64, err error) {
 	var userList []models.User
 	db := global.DB.Model(&models.User{})
 	err = db.Count(&total).Error
@@ -17,7 +20,7 @@ func GetAllUsersPage(info request.PageInfo) (list []models.User, total int64, er
 		return
 	}
 	//db = db.Limit(limit).Offset(offset)
-	err = db.Scopes(info.Paginate()).Find(&userList).Error
+	err = db.Scopes(info.Paginate()).Where("username LIKE ?", "%"+info.User.Username+"%").Find(&userList).Error
 	return userList, total, err
 }
 
@@ -42,15 +45,3 @@ func GetUserById(id int) (user *models.User, err error) {
 func CreateUser(user *models.User) error {
 	return global.DB.Create(&user).Error
 }
-
-//
-//// 根据条件查询用户列表
-//func FindUsersByCondition(condition map[string]interface{}) ([]*models.User, error) {
-//	var users []*models.User
-//	result := db.DB.Where(condition).Find(&users)
-//	if result.Error != nil {
-//		zlog.Error("Failed to query users by condition", "error", result.Error)
-//		return nil, result.Error
-//	}
-//	return users, nil
-//}
