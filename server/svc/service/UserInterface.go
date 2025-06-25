@@ -7,8 +7,8 @@ import (
 )
 
 type UserPageReq struct {
-	request.PageInfo
-	User *models.User
+	Pages *request.PageInfo
+	User  *models.User
 }
 
 // 分页测试
@@ -20,7 +20,13 @@ func GetAllUsersPage(info *UserPageReq) (list []models.User, total int64, err er
 		return
 	}
 	//db = db.Limit(limit).Offset(offset)
-	err = db.Scopes(info.Paginate()).Where("username LIKE ?", "%"+info.User.Username+"%").Find(&userList).Error
+	// 由于 info.Pages 是 *request.PageInfo 类型，不能直接用于 db.Scopes，需要将分页逻辑提取出来
+	limit := int(info.Pages.PageSize)
+	offset := int((info.Pages.Page - 1) * info.Pages.PageSize)
+	db = db.Limit(limit).Offset(offset)
+	if info.User.Username != "" {
+		err = db.Where("username LIKE ?", "%"+info.User.Username+"%").Find(&userList).Error
+	}
 	return userList, total, err
 }
 

@@ -28,7 +28,6 @@ func InitRedisClient(redisConfig config.Redis) (redis.UniversalClient, error) {
 		global.LOG.Error("redis connect ping failed, err:", zap.String("addr", redisConfig.Addr), zap.Error(err))
 		return nil, err
 	}
-
 	global.LOG.Info("redis connect ping response:", zap.String("addr", redisConfig.Addr), zap.String("pong", pong))
 	return rdb, nil
 }
