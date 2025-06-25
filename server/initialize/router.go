@@ -23,6 +23,9 @@ func Routers() *gin.Engine {
 	Router.GET("/health", func(c *gin.Context) {
 		response.Ok(c)
 	})
+	Router.GET("/panic", func(c *gin.Context) {
+		panic("测试panic")
+	})
 	return Router
 }
 
@@ -48,4 +51,5 @@ func SetupUserRoutes(apiGroup *gin.RouterGroup) {
 	userGroup.POST("/create", userApi.CreatUsers)   // 创建用户
 	userGroup.DELETE("/remove", userApi.DeleteUser) // 删除用户
 	userGroup.POST("/update", userApi.UpdateUser)   // 更新用户信息
+	userGroup.POST("/diy", userApi.GetDiy)          // 更新用户信息
 }

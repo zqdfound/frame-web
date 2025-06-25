@@ -89,3 +89,7 @@ func (userAPi *UserApi) UpdateUser(c *gin.Context) {
 	global.LOG.Info("更新成功!", zap.Any("user", user))
 	response.OkWithMessage("更新成功", c)
 }
+
+func (userAPi *UserApi) GetDiy(c *gin.Context) {
+	response.OkWithData(userService.GetDiySqlResult(), c)
+}

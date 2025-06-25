@@ -19,14 +19,12 @@ func GetAllUsersPage(info *UserPageReq) (list []models.User, total int64, err er
 	if err != nil {
 		return
 	}
+
 	//db = db.Limit(limit).Offset(offset)
-	// 由于 info.Pages 是 *request.PageInfo 类型，不能直接用于 db.Scopes，需要将分页逻辑提取出来
-	limit := int(info.Pages.PageSize)
-	offset := int((info.Pages.Page - 1) * info.Pages.PageSize)
-	db = db.Limit(limit).Offset(offset)
 	if info.User.Username != "" {
 		err = db.Where("username LIKE ?", "%"+info.User.Username+"%").Find(&userList).Error
 	}
+	db = db.Scopes(info.Pages.Paginate()).Find(&userList)
 	return userList, total, err
 }
 
@@ -50,4 +48,27 @@ func GetUserById(id int) (user *models.User, err error) {
 // 新增
 func CreateUser(user *models.User) error {
 	return global.DB.Create(&user).Error
+}
+
+// 自定义sql查询
+func GetDiySqlResult() (results []CustomResult) {
+	//var results []CustomResult
+	var total int64
+	baseQuery := global.DB.Table("users u").
+		Select("u.status, COUNT(*) as nums").
+		Group("u.status")
+	// 获取总数
+	if err := baseQuery.Count(&total).Error; err != nil {
+		return
+	}
+	// 获取分页数据
+	if err := baseQuery.Scopes(request.Paginate(1, 11)).Find(&results).Error; err != nil {
+		return
+	}
+	return results
+}
+
+type CustomResult struct {
+	Status int `json:"status"`
+	Nums   int `json:"nums"`
 }

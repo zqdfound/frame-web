@@ -28,9 +28,13 @@ type JWTConfig struct {
 
 func JWTAuth2() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		response.FailWithMessage("测试需要鉴权", c)
-		c.Abort()
-		return
+		var token = c.GetHeader("token")
+		if token != "donotgogentleintothatgoodnight" {
+			response.PermissionDeny("没有权限", c)
+			c.Abort()
+			return
+		}
+		c.Next()
 	}
 }
 
