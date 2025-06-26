@@ -34,6 +34,7 @@ func SetAuthRoutes(router *gin.Engine) {
 	apiGroup := router.Group(global.CONFIG.System.RouterPrefix + "/api")
 	apiGroup.Use(middleware.JWTAuth2())
 	SetupUserRoutes(apiGroup)
+	SetupFileRoutes(apiGroup)
 }
 
 // 不需要鉴权的路由
@@ -42,6 +43,7 @@ func SetNoAuthRoutes(router *gin.Engine) {
 	SetupUserRoutes(apiGroup)
 }
 
+// //////////////////////////////////////////////////////////////////////
 // 用户相关
 func SetupUserRoutes(apiGroup *gin.RouterGroup) {
 	userGroup := apiGroup.Group("/users")
@@ -52,4 +54,10 @@ func SetupUserRoutes(apiGroup *gin.RouterGroup) {
 	userGroup.DELETE("/remove", userApi.DeleteUser) // 删除用户
 	userGroup.POST("/update", userApi.UpdateUser)   // 更新用户信息
 	userGroup.POST("/diy", userApi.GetDiy)          // 更新用户信息
+}
+
+// 文件操作
+func SetupFileRoutes(group *gin.RouterGroup) {
+	fileGroup := group.Group("/files")
+	fileGroup.POST("/upload", api.UploadFile) // 上传文件
 }
