@@ -59,5 +59,6 @@ func SetupUserRoutes(apiGroup *gin.RouterGroup) {
 // 文件操作
 func SetupFileRoutes(group *gin.RouterGroup) {
 	fileGroup := group.Group("/files")
-	fileGroup.POST("/upload", api.UploadFile) // 上传文件
+	fileGroup.POST("/upload", api.UploadFile)   // 上传文件
+	fileGroup.DELETE("/delete", api.DeleteFile) // 删除文件
 }

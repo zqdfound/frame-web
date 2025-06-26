@@ -13,3 +13,10 @@ func UploadFile(header *multipart.FileHeader) (url string, relativePath string, 
 	}
 	return filePath, key, nil
 }
+
+// DeleteFile 删除文件
+// 传入文件的相对路径
+func DeleteFile(relativePath string) error {
+	oss := upload.NewOss()
+	return oss.DeleteFile(relativePath)
+}

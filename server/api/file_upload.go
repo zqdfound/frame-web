@@ -22,3 +22,17 @@ func UploadFile(c *gin.Context) {
 		"relativePath": relativePath,
 	}, c)
 }
+
+func DeleteFile(c *gin.Context) {
+	relativePath := c.Query("relativePath")
+	if relativePath == "" {
+		response.FailWithMessage("relativePath不能为空", c)
+		return
+	}
+	err := thirdService.DeleteFile(relativePath)
+	if err != nil {
+		response.FailWithMessage("删除文件失败:"+err.Error(), c)
+		return
+	}
+	response.OkWithMessage("删除成功", c)
+}
