@@ -41,7 +41,7 @@ export default {
   methods: {
     async submitForm() {
       try {
-        const response = await fetch('http://localhost:8888/device', {
+        const response = await fetch('http://localhost:8888/users/device', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -53,7 +53,7 @@ export default {
         });
         
         const result = await response.json();
-        if (result.code === 0) {
+        if (result.code === 200) {
           this.responseData = result;
           this.showModal = true;
         } else {
@@ -120,9 +120,11 @@ label {
 
 /* 新增弹窗样式 */
 .modal {
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: fixed;
-  z-index: 1;
+  z-index: 1000;
   left: 0;
   top: 0;
   width: 100%;
@@ -132,12 +134,14 @@ label {
 
 .modal-content {
   background-color: #fefefe;
-  margin: 10% auto;
   padding: 20px;
   border: 1px solid #888;
   width: 80%;
   max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
   border-radius: 8px;
+  position: relative;
 }
 
 .close {

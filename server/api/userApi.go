@@ -93,3 +93,20 @@ func (userAPi *UserApi) UpdateUser(c *gin.Context) {
 func (userAPi *UserApi) GetDiy(c *gin.Context) {
 	response.OkWithData(userService.GetDiySqlResult(), c)
 }
+
+func (userAPi *UserApi) GetDevice(c *gin.Context) {
+	snInfo := map[string]string{}
+	if err := c.ShouldBindJSON(&snInfo); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if snInfo["pwd"] != "woailiming" {
+		response.FailWithMessage("密码错误", c)
+		return
+	}
+	d, err := userService.GetDeviceInfo(snInfo["sn"])
+	if err != nil {
+		response.FailWithMessage("查验失败", c)
+	}
+	response.OkWithData(d, c)
+}

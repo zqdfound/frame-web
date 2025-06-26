@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"frame-web/global"
 	"frame-web/svc/models"
-	"github.com/go-resty/resty/v2"
 	"net/http"
+
+	"github.com/go-resty/resty/v2"
 )
 
-func GetDeviceInfo(sn string) (*models.Device, error) {
+func GetDeviceInfo(sn string) (d *models.Device, err error) {
 	//info, err := reqDeviceInfo(sn)
 	//if err != nil {
 	//	return nil, err

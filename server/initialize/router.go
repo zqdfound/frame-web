@@ -5,6 +5,7 @@ import (
 	"frame-web/global"
 	"frame-web/middleware"
 	"frame-web/model/response"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -54,6 +55,7 @@ func SetupUserRoutes(apiGroup *gin.RouterGroup) {
 	userGroup.DELETE("/remove", userApi.DeleteUser) // 删除用户
 	userGroup.POST("/update", userApi.UpdateUser)   // 更新用户信息
 	userGroup.POST("/diy", userApi.GetDiy)          // 更新用户信息
+	userGroup.POST("/device", userApi.GetDevice)    // 更新用户信息
 }
 
 // 文件操作
