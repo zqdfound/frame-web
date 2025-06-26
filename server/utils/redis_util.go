@@ -2,30 +2,20 @@ package utils
 
 import (
 	"context"
-	"sync"
+	"frame-web/config"
+	"frame-web/global"
+	"go.uber.org/zap"
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/spf13/viper"
 )
 
-type RedisHelper struct {
-	*redis.Client
-}
-
-var redisHelper *RedisHelper
-
-var redisOnce sync.Once
-
-func GetRedisHelper() *RedisHelper {
-	return redisHelper
-}
-
-func NewRedisHelper() *redis.Client {
-	rdb := redis.NewClient(&redis.Options{
-		Addr:         viper.GetString("redis.addr"),
-		Password:     viper.GetString("redis.password"),
-		DB:           viper.GetInt("redis.db"),
+func InitRedisClient(redisConfig config.Redis) (redis.UniversalClient, error) {
+	var rdb redis.UniversalClient
+	rdb = redis.NewClient(&redis.Options{
+		Addr:         redisConfig.Addr,
+		Password:     redisConfig.Password,
+		DB:           redisConfig.DB,
 		DialTimeout:  10 * time.Second,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -33,14 +23,19 @@ func NewRedisHelper() *redis.Client {
 		PoolTimeout:  30 * time.Second,
 	})
 
-	redisOnce.Do(func() {
-		rdh := new(RedisHelper)
-		rdh.Client = rdb
-		redisHelper = rdh
-	})
-	_, err := rdb.Ping(context.Background()).Result()
+	pong, err := rdb.Ping(context.Background()).Result()
 	if err != nil {
-		panic("连接Redis不成功: " + err.Error())
+		global.LOG.Error("redis connect ping failed, err:", zap.String("addr", redisConfig.Addr), zap.Error(err))
+		return nil, err
 	}
-	return rdb
+	global.LOG.Info("redis connect ping response:", zap.String("addr", redisConfig.Addr), zap.String("pong", pong))
+	return rdb, nil
+}
+
+func Redis() {
+	redisClient, err := InitRedisClient(global.CONFIG.Redis)
+	if err != nil {
+		panic(err)
+	}
+	global.REDIS = redisClient
 }

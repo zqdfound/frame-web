@@ -26,6 +26,18 @@ type JWTConfig struct {
 	TokenLookup string   // token查找方式，如 "header:Authorization"
 }
 
+func JWTAuth2() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var token = c.GetHeader("token")
+		if token != "donotgogentleintothatgoodnight" {
+			response.PermissionDeny("没有权限", c)
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
 // JWTAuth JWT鉴权中间件
 func JWTAuth(config JWTConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
