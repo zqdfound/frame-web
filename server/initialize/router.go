@@ -5,7 +5,6 @@ import (
 	"frame-web/global"
 	"frame-web/middleware"
 	"frame-web/model/response"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,9 +32,15 @@ func Routers() *gin.Engine {
 // 需要鉴权的路由
 func SetAuthRoutes(router *gin.Engine) {
 	apiGroup := router.Group(global.CONFIG.System.RouterPrefix + "/api")
-	apiGroup.Use(middleware.JWTAuth2())
-	SetupUserRoutes(apiGroup)
-	SetupFileRoutes(apiGroup)
+	apiGroup.Use(middleware.JWTAuth(middleware.JWTConfig{
+		SigningKey:  "woailiming",
+		ContextKey:  "user",
+		TokenLookup: "header:Authorization",
+	}))
+	//apiGroup.Use(middleware.JWTAuth2())
+	//SetupUserRoutes(apiGroup)
+	//SetupFileRoutes(apiGroup)
+	UserinfoRoute(apiGroup)
 }
 
 // 不需要鉴权的路由
@@ -56,6 +61,7 @@ func SetupUserRoutes(apiGroup *gin.RouterGroup) {
 	userGroup.POST("/update", userApi.UpdateUser)   // 更新用户信息
 	userGroup.POST("/diy", userApi.GetDiy)          // 更新用户信息
 	userGroup.POST("/device", userApi.GetDevice)    // 更新用户信息
+	userGroup.POST("/login", userApi.Login)         // 更新用户信息
 }
 
 // 文件操作
@@ -63,4 +69,11 @@ func SetupFileRoutes(group *gin.RouterGroup) {
 	fileGroup := group.Group("/files")
 	fileGroup.POST("/upload", api.UploadFile)   // 上传文件
 	fileGroup.DELETE("/delete", api.DeleteFile) // 删除文件
+}
+
+// 文件操作
+func UserinfoRoute(group *gin.RouterGroup) {
+	fileGroup := group.Group("/userinfo")
+	userApi := api.UserApi{}
+	fileGroup.POST("/my", userApi.GetUserInfo) // 获取我的信息
 }

@@ -24,8 +24,8 @@ import (
 func Test_decodeUser(t *testing.T) {
 	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyY29udGV4dCI6eyJ1c2VyX2lkIjoiMTIzIiwidXNlcm5hbWUiOiJ0ZXN0dXNlciIsImV4cCI6MTc1MDMxNjc5OX19.PXX4NltLjIr6RGT01X28HmeUkYgVQ6O7fshYL881HRE"
 	jwtConfig := middleware.JWTConfig{
-		SigningKey:  "woailiming",
-		WhiteList:   []string{"/api/public", "/test/set/jwt"},
+		SigningKey: "woailiming",
+		// WhiteList:   []string{"/api/public", "/test/set/jwt"},
 		ContextKey:  "usercontext",
 		TokenLookup: "header:Authorization",
 	}

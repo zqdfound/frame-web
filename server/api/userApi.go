@@ -2,6 +2,7 @@ package api
 
 import (
 	"frame-web/global"
+	"frame-web/middleware"
 	"frame-web/model/request"
 	"frame-web/model/response"
 	"frame-web/svc/models"
@@ -92,6 +93,46 @@ func (userAPi *UserApi) UpdateUser(c *gin.Context) {
 
 func (userAPi *UserApi) GetDiy(c *gin.Context) {
 	response.OkWithData(userService.GetDiySqlResult(), c)
+}
+
+func (userAPi *UserApi) Login(c *gin.Context) {
+	var user models.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	//if user.Username == "" || user.Password == "" {
+	//	response.FailWithMessage("用户名或密码不能为空", c)
+	//	return
+	//}
+	jwtConfig := middleware.JWTConfig{
+		SigningKey:  "woailiming",
+		ContextKey:  "user",
+		TokenLookup: "header:Authorization",
+	}
+	userContext := middleware.UserContext{
+		UserID:   "1",
+		Username: user.Username,
+	}
+	token, err := middleware.GenerateTokenByUser(&jwtConfig, &userContext)
+	if err != nil {
+		response.FailWithMessage("登录失败:"+err.Error(), c)
+		return
+	}
+	response.OkWithData(token, c)
+}
+
+func (userAPi *UserApi) GetUserInfo(c *gin.Context) {
+	userContext, err := middleware.ParseToken2User(&middleware.JWTConfig{
+		SigningKey:  "woailiming",
+		ContextKey:  "user",
+		TokenLookup: "header:Authorization",
+	}, c)
+	if err != nil {
+		response.FailWithMessage("获取用户信息失败:"+err.Error(), c)
+		return
+	}
+	response.OkWithData(userContext, c)
 }
 
 func (userAPi *UserApi) GetDevice(c *gin.Context) {

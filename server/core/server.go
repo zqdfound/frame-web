@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"frame-web/global"
 	"frame-web/initialize"
-	"frame-web/utils"
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"time"
@@ -17,7 +16,7 @@ type server interface {
 func RunWindowsServer() {
 
 	//init Redis
-	utils.Redis()
+	//utils.Redis()
 	Router := initialize.Routers()
 	address := fmt.Sprintf(":%d", global.CONFIG.System.Addr)
 	//address := fmt.Sprintf(":%d", global.GVA_CONFIG.System.Addr)

@@ -3,9 +3,9 @@ package middleware
 import (
 	"encoding/json"
 	"errors"
+	"frame-web/global"
 	"frame-web/model/response"
-	"net/http"
-	"path/filepath"
+	"go.uber.org/zap"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -20,10 +20,9 @@ type UserContext struct {
 
 // JWTConfig JWT配置
 type JWTConfig struct {
-	SigningKey  string   // 签名密钥
-	WhiteList   []string // 白名单路径
-	ContextKey  string   // 上下文键名
-	TokenLookup string   // token查找方式，如 "header:Authorization"
+	SigningKey  string // 签名密钥
+	ContextKey  string // 上下文键名
+	TokenLookup string // token查找方式，如 "header:Authorization"
 }
 
 func JWTAuth2() gin.HandlerFunc {
@@ -41,33 +40,22 @@ func JWTAuth2() gin.HandlerFunc {
 // JWTAuth JWT鉴权中间件
 func JWTAuth(config JWTConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 检查白名单
-		for _, path := range config.WhiteList {
-			// 支持通配符*的路径匹配
-			if match, _ := filepath.Match(path, c.Request.URL.Path); match {
-				c.Next()
-				return
-			}
-
-			// 保留原有的前缀匹配
-			if strings.HasPrefix(c.Request.URL.Path, path) {
-				c.Next()
-				return
-			}
-		}
-
 		// 获取token
 		token, err := getToken(c, config.TokenLookup)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			// c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			// return
+			response.NoAuth("请重新登录11", c)
+			c.Abort()
 			return
 		}
 
 		// 解析token
 		claims, err := ParseToken(token, config.SigningKey)
 		if err != nil {
-			// c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "无效的token"})
-			response.FailWithMessage("无效的token", c)
+			response.NoAuth("请重新登录22", c)
+			global.LOG.Error("JWT解析失败", zap.Error(err))
+			c.Abort()
 			return
 		}
 
@@ -116,7 +104,8 @@ func ParseToken(tokenString, signingKey string) (jwt.MapClaims, error) {
 	return nil, errors.New("无效的token")
 }
 
-func ParseToken2User(tokenString string, jwtConfig *JWTConfig) (*UserContext, error) {
+func ParseToken2User(jwtConfig *JWTConfig, c *gin.Context) (*UserContext, error) {
+	tokenString, err := getToken(c, jwtConfig.TokenLookup)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("不支持的签名方法")
