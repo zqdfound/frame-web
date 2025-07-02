@@ -16,6 +16,15 @@ import (
 type UserApi struct {
 }
 
+// @Summary 获取用户信息
+// @Description 根据ID获取用户详细信息
+// @Tags 用户
+// @Accept json
+// @Produce json
+// @Param id query int true "用户ID"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /users/get [get]
 func (userAPi *UserApi) GetUser(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Query("id"))
 	user, err := userService.GetUserById(id)

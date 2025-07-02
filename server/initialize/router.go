@@ -2,15 +2,20 @@ package initialize
 
 import (
 	"frame-web/api"
+	_ "frame-web/docs" // 这是生成的docs文件夹
 	"frame-web/global"
 	"frame-web/middleware"
 	"frame-web/model/response"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // 初始化总路由
 func Routers() *gin.Engine {
 	Router := gin.New()
+	// 添加这行代码
+	Router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	//Router.Use(gin.Recovery())
 	Router.Use(middleware.GinRecovery(false)) // 使用自定义的恢复中间件
 	//if gin.Mode() == gin.DebugMode {
