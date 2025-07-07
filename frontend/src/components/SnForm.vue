@@ -1,28 +1,44 @@
 <template>
-  <div class="auth-form">
+  <div v-if="!isLoggedIn" class="auth-form">
     <div class="form-container">
       <div class="form-group">
-        <label>SN:</label>
-        <input v-model="sn" type="text" class="form-input" />
+        <label>用户名:</label>
+        <input v-model="username" type="text" class="form-input" />
       </div>
       <div class="form-group">
         <label>密码:</label>
-        <input v-model="pwd" type="password" class="form-input" />
+        <input v-model="password" type="password" class="form-input" />
       </div>
-      <button @click="submitForm" class="submit-btn">确定</button>
+      <button @click="login" class="submit-btn">登录</button>
     </div>
-    
-    <!-- 新增弹窗 -->
-    <div v-if="showModal" class="modal">
-      <div class="modal-content">
-        <span class="close" @click="showModal = false">&times;</span>
-        <h3>设备信息</h3>
-        <table class="data-table">
-          <tr v-for="(value, key) in responseData.data" :key="key">
-            <td class="key-column">{{ key }}</td>
-            <td>{{ value }}</td>
-          </tr>
-        </table>
+  </div>
+  
+  <div v-else>
+    <div class="auth-form">
+      <div class="form-container">
+        <div class="form-group">
+          <label>SN:</label>
+          <input v-model="sn" type="text" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label>密码:</label>
+          <input v-model="pwd" type="password" class="form-input" />
+        </div>
+        <button @click="submitForm" class="submit-btn">确定</button>
+      </div>
+      
+      <!-- 新增弹窗 -->
+      <div v-if="showModal" class="modal">
+        <div class="modal-content">
+          <span class="close" @click="showModal = false">&times;</span>
+          <h3>设备信息</h3>
+          <table class="data-table">
+            <tr v-for="(value, key) in responseData.data" :key="key">
+              <td class="key-column">{{ key }}</td>
+              <td>{{ value }}</td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -32,6 +48,10 @@
 export default {
   data() {
     return {
+      isLoggedIn: false,
+      username: '',
+      password: '',
+      token: '',
       sn: '',
       pwd: '',
       showModal: false,
@@ -39,12 +59,37 @@ export default {
     }
   },
   methods: {
+    async login() {
+      try {
+        const response = await fetch('http://localhost:8888/users/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: this.username,
+            password: this.password
+          })
+        });
+        
+        const result = await response.json();
+        if (result.code === 200) {
+          this.token = result.data.token;
+          localStorage.setItem('token', this.token);
+          this.isLoggedIn = true;
+        } else {
+          alert('登录失败: ' + result.msg);
+        }
+      } catch (error) {
+        alert('登录失败: ' + error.message);
+      }
+    },
+    
     async submitForm() {
       try {
         const response = await fetch('http://localhost:8888/users/device', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.token || localStorage.getItem('token')}`
           },
           body: JSON.stringify({
             sn: this.sn,
@@ -62,6 +107,13 @@ export default {
       } catch (error) {
         alert('请求失败: ' + error.message);
       }
+    }
+  },
+  created() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.token = token;
+      this.isLoggedIn = true;
     }
   }
 }
